@@ -29,7 +29,7 @@ def download_playlist():
     playlist_url = input('Type your playlist URL here: ')
     playlist = Playlist(playlist_url)
     for video in playlist.videos:
-        stream = video.streams.filter(only_audio=True, file_extension='mp3').first()
+        stream = video.streams.filter(only_audio=True).first()
         stream.download()
 
     # if playlists folder doesn't exist, create it
@@ -37,10 +37,10 @@ def download_playlist():
         os.makedirs('playlists')
 
     # change the file name extension to mp3
-    # for file in os.listdir():
-    #     if file.endswith('.mp4'):
-    #         name = file
-    #         os.rename(file, f'{file[:-4]}.mp3')
+    for file in os.listdir():
+        if file.endswith('.mp4'):
+            name = file
+            os.rename(file, f'{file[:-4]}.mp3')
 
     # get the playlist name
     playlist_name = playlist.title
