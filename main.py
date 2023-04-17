@@ -1,4 +1,5 @@
 import os
+import re
 
 from pytube import YouTube, Playlist
 
@@ -24,7 +25,7 @@ class YT2MP3(App):
         self.window.add_widget(self.app_title)
 
         # text input widget
-        self.url_input = TextInput(multiline=False, hint_text='Enter YouTube URL', font_size=12, padding_y=(20, 20), size_hint=(1, 0.5))
+        self.url_input = TextInput(multiline=False, hint_text='Enter YouTube URL', font_size=12, padding=(20, 20), size_hint=(1, 0.5))
         self.window.add_widget(self.url_input)
 
         # button widget
@@ -33,7 +34,7 @@ class YT2MP3(App):
         self.window.add_widget(self.download_button)
 
         # label widget
-        self.status_label = Label(text='Status: ')
+        self.status_label = Label(text='''Status:''')
         self.window.add_widget(self.status_label)
 
         return self.window
@@ -52,29 +53,35 @@ class YT2MP3(App):
         is_playlist = is_playlist(url)
 
         if is_playlist == "playlist":
-            self.status_label.text = 'Status: Downloading playlist...'
+            self.status_label.text = '''Status:
+            Downloading playlist...'''
             playlist = Playlist(url)
-            playlist_name = playlist.title
+            playlist_name = re.sub(r'\W+', '', playlist.title)
             if not os.path.exists('playlists'):
                 os.makedirs('playlists')
             if not os.path.exists(f'playlists/{playlist_name}'):
                 os.makedirs(f'playlists/{playlist_name}')
             for video in playlist.videos:
-                self.status_label.text = f'''Status: Downloading playlist...
-                {video.title}...'''
+                clean_video_title = re.sub(r'\W+', '', video.title)
+                self.status_label.text = f'''Status:
+                Downloading playlist...
+                {clean_video_title}...'''
                 stream = video.streams.filter(only_audio=True).first()
-                stream.download(filename=f"playlists/{playlist_name}/{video.title}.mp3")
+                stream.download(filename=f"playlists/{playlist_name}/{clean_video_title}.mp3")
 
         elif is_playlist == "video":
-            self.status_label.text = 'Status: Downloading video...'
+            self.status_label.text = '''Status:
+            Downloading video...'''
             yt = YouTube(url)
+            clean_video_title = re.sub(r'\W+', '', yt.title)
             if not os.path.exists('music'):
                 os.makedirs('music')
             stream = yt.streams.filter(only_audio=True).first()
-            stream.download(filename=f"music/{yt.title}.mp3")
+            stream.download(filename=f"music/{clean_video_title}.mp3")
 
         else:
-            self.status_label.text = "Status: Invalid URL"
+            self.status_label.text = '''Status:
+            Invalid URL'''
 
 if __name__ == '__main__':
     YT2MP3().run()
